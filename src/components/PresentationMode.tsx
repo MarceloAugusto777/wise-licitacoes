@@ -261,6 +261,220 @@ export function PresentationMode({
                 fontFace: "Arial"
               });
             });
+          } else if (sItem.id === "pain") {
+            // Desafios do setor (3 cards)
+            const painItems = [
+              { title: "Burocracia e Complexidade Jurídica", desc: "Análise minuciosa de todas as exigências do edital para zerar riscos de inabilitação." },
+              { title: "Erros em Documentação", desc: "Verificação rigorosa de certidões, balanços e atestados técnicos exigidos pelos órgãos." },
+              { title: "Falta de Equipe Especializada", desc: "Assumimos toda a operação comercial e jurídica sem necessidade de inflar seu time interno." }
+            ];
+
+            painItems.forEach((pItem, pIdx) => {
+              const pPosX = startX + pIdx * (cardWidth + gap);
+              pptxSlide.addShape(pptx.ShapeType.rect, {
+                x: pPosX,
+                y: 2.6,
+                w: cardWidth,
+                h: 4.1,
+                fill: { color: "0F172A" },
+                line: { color: "334155", width: 1 }
+              });
+
+              pptxSlide.addText(`0${pIdx + 1}`, {
+                x: pPosX + 0.3,
+                y: 2.8,
+                w: cardWidth - 0.6,
+                fontSize: 20,
+                bold: true,
+                color: "EF4444",
+                fontFace: "Arial"
+              });
+
+              pptxSlide.addText(pItem.title, {
+                x: pPosX + 0.3,
+                y: 3.4,
+                w: cardWidth - 0.6,
+                fontSize: 13,
+                bold: true,
+                color: "FFFFFF",
+                fontFace: "Arial"
+              });
+
+              pptxSlide.addText(pItem.desc, {
+                x: pPosX + 0.3,
+                y: 4.3,
+                w: cardWidth - 0.6,
+                fontSize: 10,
+                color: "94A3B8",
+                fontFace: "Arial"
+              });
+            });
+          } else if (sItem.id === "process") {
+            // Metodologia (4 cards horizontais)
+            const stepWidth = 2.8;
+            const stepGap = 0.3;
+            const stepSteps = [
+              { num: "01", title: "Mapeamento", desc: "Monitoramento diário de oportunidades em todo o Brasil." },
+              { num: "02", title: "Análise de Edital", desc: "Estudo de viabilidade técnica e financeira das licitações." },
+              { num: "03", title: "Habilitação", desc: "Organização da documentação e preparação das propostas." },
+              { num: "04", title: "Disputa & Contrato", desc: "Participação no pregão e acompanhamento da homologação." }
+            ];
+
+            stepSteps.forEach((st, stIdx) => {
+              const stPosX = startX + stIdx * (stepWidth + stepGap);
+              pptxSlide.addShape(pptx.ShapeType.rect, {
+                x: stPosX,
+                y: 2.6,
+                w: stepWidth,
+                h: 4.1,
+                fill: { color: "0F172A" },
+                line: { color: "1E293B", width: 1 }
+              });
+
+              pptxSlide.addText(st.num, {
+                x: stPosX + 0.2,
+                y: 2.8,
+                w: stepWidth - 0.4,
+                fontSize: 22,
+                bold: true,
+                color: "10B981",
+                fontFace: "Arial"
+              });
+
+              pptxSlide.addText(st.title, {
+                x: stPosX + 0.2,
+                y: 3.5,
+                w: stepWidth - 0.4,
+                fontSize: 13,
+                bold: true,
+                color: "FFFFFF",
+                fontFace: "Arial"
+              });
+
+              pptxSlide.addText(st.desc, {
+                x: stPosX + 0.2,
+                y: 4.3,
+                w: stepWidth - 0.4,
+                fontSize: 9.5,
+                color: "94A3B8",
+                fontFace: "Arial"
+              });
+            });
+          } else if (sItem.id === "benefits" || sItem.id === "differentiators") {
+            // Grid 2x2 de diferenciais
+            const bCards = [
+              { title: "Segurança Jurídica Total", desc: "Análise detalhada por especialistas em Direito Administrativo." },
+              { title: "Inteligência Estratégica", desc: "Estudo de concorrência e estimativa de lances vencedores." },
+              { title: "Taxa de Sucesso Elevada", desc: "Histórico comprovado com milhões em contratos homologados." },
+              { title: "Acompanhamento de Ponta a Ponta", desc: "Suporte contínuo da publicação do edital até a assinatura do contrato." }
+            ];
+
+            bCards.forEach((bItem, bIdx) => {
+              const row = Math.floor(bIdx / 2);
+              const col = bIdx % 2;
+              const gX = 0.6 + col * 6.2;
+              const gY = 2.6 + row * 2.1;
+
+              pptxSlide.addShape(pptx.ShapeType.rect, {
+                x: gX,
+                y: gY,
+                w: 5.9,
+                h: 1.9,
+                fill: { color: "0F172A" },
+                line: { color: "1E293B", width: 1 }
+              });
+
+              pptxSlide.addText(`✔  ${bItem.title}`, {
+                x: gX + 0.3,
+                y: gY + 0.3,
+                w: 5.3,
+                fontSize: 13,
+                bold: true,
+                color: "34D399",
+                fontFace: "Arial"
+              });
+
+              pptxSlide.addText(bItem.desc, {
+                x: gX + 0.3,
+                y: gY + 0.9,
+                w: 5.3,
+                fontSize: 10,
+                color: "94A3B8",
+                fontFace: "Arial"
+              });
+            });
+          } else if (sItem.id === "specialties") {
+            // Segmentos (Grid 3x2)
+            const specs = [
+              "Engenharia & Construção", "Tecnologia & TI", "Saúde & Hospitalar",
+              "Serviços Terceirizados", "Alimentos & Logística", "Consultoria & Treinamento"
+            ];
+
+            specs.forEach((spec, spIdx) => {
+              const spRow = Math.floor(spIdx / 3);
+              const spCol = spIdx % 3;
+              const spX = 0.6 + spCol * 4.1;
+              const spY = 2.8 + spRow * 1.9;
+
+              pptxSlide.addShape(pptx.ShapeType.rect, {
+                x: spX,
+                y: spY,
+                w: 3.8,
+                h: 1.6,
+                fill: { color: "0F172A" },
+                line: { color: "10B981", width: 1 }
+              });
+
+              pptxSlide.addText(spec, {
+                x: spX + 0.2,
+                y: spY + 0.6,
+                w: 3.4,
+                fontSize: 12,
+                bold: true,
+                color: "FFFFFF",
+                align: "center",
+                fontFace: "Arial"
+              });
+            });
+          } else if (sItem.id === "perguntas") {
+            // FAQ (Top 3 perguntas)
+            const faqs = [
+              { q: "Minha empresa nunca participou de licitação, posso começar?", a: "Sim! Cuidamos de toda a estruturação inicial, cadastros e documentação necessária." },
+              { q: "Quais são as garantias de conformidade nos editais?", a: "Analisamos 100% dos requisitos jurídicos e técnicos para eliminar riscos de inabilitação." },
+              { q: "Como funciona o acompanhamento dos resultados?", a: "Você recebe relatórios atualizados de cada pregão e etapa do processo." }
+            ];
+
+            faqs.forEach((faq, fIdx) => {
+              const fY = 2.6 + fIdx * 1.35;
+
+              pptxSlide.addShape(pptx.ShapeType.rect, {
+                x: 0.6,
+                y: fY,
+                w: 12.13,
+                h: 1.2,
+                fill: { color: "0F172A" },
+                line: { color: "1E293B", width: 1 }
+              });
+
+              pptxSlide.addText(`P: ${faq.q}`, {
+                x: 0.9,
+                y: fY + 0.18,
+                w: 11.5,
+                fontSize: 11,
+                bold: true,
+                color: "34D399",
+                fontFace: "Arial"
+              });
+
+              pptxSlide.addText(`R: ${faq.a}`, {
+                x: 0.9,
+                y: fY + 0.6,
+                w: 11.5,
+                fontSize: 9.5,
+                color: "CBD5E1",
+                fontFace: "Arial"
+              });
+            });
           } else if (sItem.id === "cases" && siteData.cases) {
             siteData.cases.slice(0, 3).forEach((cItem, cIdx) => {
               const cPosX = startX + cIdx * (cardWidth + gap);
@@ -312,7 +526,7 @@ export function PresentationMode({
               });
             });
           } else {
-            // General slide description box
+            // Slide genérico / customizado
             pptxSlide.addShape(pptx.ShapeType.rect, {
               x: 0.6,
               y: 2.6,
@@ -322,7 +536,7 @@ export function PresentationMode({
               line: { color: "1E293B", width: 1 }
             });
 
-            pptxSlide.addText("Destaques & Informações do Slide:", {
+            pptxSlide.addText("Conteúdo Personalizado:", {
               x: 0.9,
               y: 2.9,
               w: 11.5,
@@ -333,7 +547,7 @@ export function PresentationMode({
             });
 
             pptxSlide.addText(
-              "Esta seção apresenta as estratégias, metodologias e soluções personalizadas oferecidas pela Wise Licitações para garantir inteligência comercial e vitórias em processos licitatórios.",
+              sItem.customContent || "Esta seção apresenta as estratégias, metodologias e soluções personalizadas oferecidas pela Wise Licitações para garantir inteligência comercial e vitórias em processos licitatórios.",
               {
                 x: 0.9,
                 y: 3.4,
