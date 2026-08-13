@@ -946,9 +946,8 @@ export function PresentationMode({
               {/* Wise Licitações (Highlighted) */}
               <div className="p-8 rounded-3xl bg-slate-900/80 border-2 border-emerald-400 relative shadow-[0_0_30px_rgba(16,185,129,0.15)] flex flex-col justify-between">
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald text-white text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full border border-emerald-300">
-                  Assessoria End-to-End
+                  Assessoria End-to-End + Robô BI
                 </div>
-                
                 <div>
                   <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 grid place-items-center text-emerald-400 mb-6 mx-auto">
                     <Sparkles className="h-6 w-6" />
@@ -957,19 +956,19 @@ export function PresentationMode({
                   <ul className="space-y-3 text-xs text-slate-300">
                     <li className="flex items-start gap-2">
                       <CheckCircle2 className="h-4.5 w-4.5 text-emerald-400 shrink-0 mt-0.5" />
-                      <span><strong>Nós fazemos tudo:</strong> do monitoramento operacional à assinatura.</span>
+                      <span><strong>Execução End-to-End:</strong> do monitoramento à assinatura do contrato.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle2 className="h-4.5 w-4.5 text-emerald-400 shrink-0 mt-0.5" />
-                      <span><strong>Corpo Jurídico Sênior:</strong> elaboração de recursos contra erros formais.</span>
+                      <span><strong>Robô de Lances + BI:</strong> lances em milissegundos e raio-X da concorrência.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle2 className="h-4.5 w-4.5 text-emerald-400 shrink-0 mt-0.5" />
-                      <span><strong>Assessoria Humana:</strong> especialistas reais no telefone e no chat.</span>
+                      <span><strong>Banca Jurídica Sênior:</strong> elaboração de recursos contra irregularidades.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle2 className="h-4.5 w-4.5 text-emerald-400 shrink-0 mt-0.5" />
-                      <span><strong>Foco em Resultados:</strong> modelo comercial alinhado com o seu faturamento.</span>
+                      <span><strong>Foco em Resultados:</strong> modelo alinhado ao seu faturamento.</span>
                     </li>
                   </ul>
                 </div>

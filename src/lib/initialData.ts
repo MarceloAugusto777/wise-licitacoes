@@ -442,6 +442,32 @@ export const defaultPresentationData: PresentationData = {
       visible: true,
     },
     {
+      id: "slide-tech-edge",
+      type: "tech-edge",
+      label: "Tecnologia & Robô",
+      badge: "Vantagem Tecnológica Insuperável",
+      title: "Por que a Wise sai na frente da concorrência?",
+      subtitle: "Unimos tecnologia autônoma de lances com inteligência competitiva para colocar sua empresa no 1º lugar do pregão com a maior margem de lucro.",
+      visible: true,
+      items: [
+        {
+          icon: "Bot",
+          title: "Robô de Lance Autônomo (1º Lugar Garantido)",
+          text: "Utilizamos softwares de gestão de licitações equipados com robôs de lances de milissegundos, reagindo instantaneamente no pregão para garantir a sua empresa no 1º lugar com a margem de lucro protegida."
+        },
+        {
+          icon: "BarChart3",
+          title: "Relatório Completo de Disputa & Concorrência",
+          text: "Emitimos relatórios estratégicos pós-pregão com mapeamento detalhado de itens, valores praticados, margens médias e o raio-X completo das empresas concorrentes para você dominar o mercado."
+        },
+        {
+          icon: "ShieldCheck",
+          title: "Blindagem Jurídica & Inabilitação de Adversários",
+          text: "Combinamos a inteligência robótica com auditoria jurídica humana para identificar erros nas propostas concorrentes e inabilitar adversários irregulares via recurso."
+        }
+      ]
+    },
+    {
       id: "slide-5",
       type: "cases",
       label: "Cases Reais",
