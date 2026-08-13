@@ -1363,6 +1363,71 @@ export function PresentationMode({
           </div>
         );
 
+      case "tech-edge":
+        const techItemsList = (slide.items && slide.items.length > 0)
+          ? slide.items
+          : [
+              {
+                icon: "Bot",
+                title: "Robô de Lance Autônomo (1º Lugar Garantido)",
+                text: "Utilizamos softwares de gestão de licitações equipados com robôs de lances de milissegundos, reagindo instantaneamente no pregão para garantir a sua empresa no 1º lugar com a margem de lucro protegida."
+              },
+              {
+                icon: "BarChart3",
+                title: "Relatório Completo de Disputa & Concorrência",
+                text: "Emitimos relatórios estratégicos pós-pregão com mapeamento detalhado de itens, valores praticados, margens médias e o raio-X completo das empresas concorrentes para você dominar o mercado."
+              },
+              {
+                icon: "ShieldCheck",
+                title: "Blindagem Jurídica & Inabilitação de Adversários",
+                text: "Combinamos a inteligência robótica com auditoria jurídica humana para identificar erros nas propostas concorrentes e inabilitar adversários irregulares via recurso."
+              }
+            ];
+
+        return (
+          <div className="max-w-5xl mx-auto px-6 space-y-8 py-8 animate-fade-in">
+            <div className="text-center space-y-3">
+              <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">
+                {slide.badge || "Vantagem Tecnológica Insuperável"}
+              </span>
+              <h2 className="text-3xl md:text-5xl font-semibold text-white font-display">
+                {slide.title || "Por que a Wise sai na frente da concorrência?"}
+              </h2>
+              <div className="w-24 h-1 bg-gradient-to-r from-emerald-500 to-teal-400 mx-auto rounded-full my-3" />
+              <p className="text-sm md:text-lg text-slate-300 max-w-2xl mx-auto font-light leading-relaxed">
+                {slide.subtitle || "Unimos tecnologia autônoma de lances com inteligência competitiva para colocar sua empresa no 1º lugar do pregão com a maior margem de lucro."}
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6 pt-4">
+              {techItemsList.map((item, i) => {
+                const Icon = getIcon(item.icon);
+                return (
+                  <div
+                    key={i}
+                    className="p-7 rounded-3xl bg-slate-900/60 border border-slate-800 hover:border-emerald-500/40 transition-all duration-300 flex flex-col justify-between shadow-lift relative group hover:-translate-y-1"
+                  >
+                    <div className="space-y-4">
+                      <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 grid place-items-center text-emerald-400 group-hover:scale-110 transition-transform">
+                        <Icon className="h-6 w-6" />
+                      </div>
+                      <h3 className="text-lg font-bold text-slate-100 leading-snug">
+                        {item.title}
+                      </h3>
+                      <p className="text-xs text-slate-300 leading-relaxed font-light">
+                        {item.text}
+                      </p>
+                    </div>
+                    <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center gap-2 text-[11px] font-semibold text-emerald-400">
+                      <Sparkles className="h-3.5 w-3.5" /> <span>Diferencial Exclusivo Wise</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+
       case "custom":
         return (
           <div className="max-w-4xl mx-auto px-6 text-center space-y-6 py-8">
