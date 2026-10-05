@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/accordion";
 import { toast } from "sonner";
 import { PresentationMode } from "@/components/PresentationMode";
+import { CrmPortal } from "@/components/crm/CrmPortal";
 import wiseLogo from "@/assets/wise-logo.png";
 import heroImage from "@/assets/hero-licitacoes.jpg";
 import { AdminPanel } from "@/components/AdminPanel";
@@ -81,6 +82,7 @@ function LandingPage() {
   const [presentationData, setPresentationData] = useState<PresentationData>(defaultPresentationData);
   const [cases, setCases] = useState<CaseStudy[]>(defaultCases);
   const [presenting, setPresenting] = useState(false);
+  const [showCrm, setShowCrm] = useState(false);
 
   // Load from localStorage on client side
   useEffect(() => {
@@ -142,9 +144,17 @@ function LandingPage() {
     );
   }
 
+  if (showCrm) {
+    return (
+      <CrmPortal 
+        onExit={() => setShowCrm(false)}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Nav />
+      <Nav onOpenCrm={() => setShowCrm(true)} />
       {siteData.hero.visible && <Hero data={siteData.hero} />}
       {siteData.trustBar.visible && <TrustBar data={siteData.trustBar} />}
       {siteData.pain.visible && <Pain data={siteData.pain} />}
@@ -202,7 +212,7 @@ const getIcon = (name?: string) => {
 };
 
 /* ---------------- NAV ---------------- */
-function Nav() {
+function Nav({ onOpenCrm }: { onOpenCrm?: () => void }) {
   return (
     <header className="sticky top-0 z-40 backdrop-blur-md bg-background/75 border-b border-hairline">
       <div className="container-x flex items-center justify-between h-16">
@@ -224,6 +234,17 @@ function Nav() {
           <a href="#faq" className="hover:text-ink transition-colors">FAQ</a>
         </nav>
         <div className="flex items-center gap-2">
+          {onOpenCrm && (
+            <Button 
+              variant="outline" 
+              onClick={onOpenCrm}
+              className="gap-2 text-xs font-semibold rounded-full border-emerald-500/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 px-4"
+            >
+              <Lock className="w-3.5 h-3.5" />
+              <span>Portal CRM / Área do Cliente</span>
+            </Button>
+          )}
+
           <a
             href={WHATSAPP_URL}
             target="_blank"
@@ -232,7 +253,7 @@ function Nav() {
           >
             <MessageCircle className="h-4 w-4" /> WhatsApp
           </a>
-          <a href="#contato">
+          <a href="#contato" className="hidden lg:block">
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-5">
               Consultoria gratuita
             </Button>

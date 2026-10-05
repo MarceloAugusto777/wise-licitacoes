@@ -45,12 +45,15 @@ export function AdminPanel({
   setCases,
   onStartPresentation,
 }: AdminPanelProps) {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("wise_admin_logged") === "true";
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    if (localStorage.getItem("wise_admin_logged") === "true") {
+      setIsLoggedIn(true);
     }
-    return false;
-  });
+  }, []);
   
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showEditorPanel, setShowEditorPanel] = useState(false);
@@ -220,6 +223,8 @@ export function AdminPanel({
       window.removeEventListener("open-admin-login", handleOpenLogin);
     };
   }, [isLoggedIn]);
+
+  if (!mounted) return null;
 
   return (
     <>
