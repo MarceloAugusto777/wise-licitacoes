@@ -42,10 +42,14 @@ export function CrmLoginModal({ isOpen, onClose, onLoginSuccess }: CrmLoginModal
     );
 
     if (found) {
+      if (password && found.passwordHint && found.passwordHint.trim() !== password.trim()) {
+        setErrorMsg('Senha incorreta para este usuário. Verifique suas credenciais.');
+        return;
+      }
       CrmStorage.setCurrentUser(found);
       onLoginSuccess(found);
     } else {
-      setErrorMsg('Usuário não encontrado. Utilize uma das contas de teste rápido abaixo.');
+      setErrorMsg('Usuário não encontrado com este e-mail. Verifique a digitação ou utilize o acesso rápido abaixo.');
     }
   };
 

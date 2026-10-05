@@ -14,11 +14,17 @@ import {
   ArrowRight,
   Sparkles,
   FileText,
-  HelpCircle,
   ExternalLink,
-  MessageCircle
+  MessageCircle,
+  KeyRound,
+  Lock,
+  X,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { 
   CrmUser, 
   CrmCompany, 
@@ -43,6 +49,56 @@ export function ClientDashboard({ currentUser }: ClientDashboardProps) {
 
   const [activeTab, setActiveTab] = useState<'funnel' | 'notifications' | 'documents' | 'team'>('funnel');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+
+  // Controle de Alteração de Senha do Empresário
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [currentPasswordInput, setCurrentPasswordInput] = useState('');
+  const [newPasswordInput, setNewPasswordInput] = useState('');
+  const [confirmPasswordInput, setConfirmPasswordInput] = useState('');
+  const [showCurrentPass, setShowCurrentPass] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [isChangingPass, setIsChangingPass] = useState(false);
+
+  const handleChangePassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPasswordInput || newPasswordInput.trim().length < 4) {
+      toast.error('A nova senha deve ter no mínimo 4 caracteres.');
+      return;
+    }
+    if (newPasswordInput.trim() !== confirmPasswordInput.trim()) {
+      toast.error('A confirmação não confere com a nova senha.');
+      return;
+    }
+    if (currentUser.passwordHint && currentPasswordInput.trim() !== currentUser.passwordHint.trim()) {
+      toast.error('A senha atual informada está incorreta.');
+      return;
+    }
+
+    setIsChangingPass(true);
+    const updated = CrmStorage.updateUser(currentUser.id, {
+      passwordHint: newPasswordInput.trim()
+    });
+
+    if (updated) {
+      CrmStorage.setCurrentUser(updated);
+      // Notificação de segurança no cofre da empresa
+      CrmStorage.addNotification({
+        companyId: myCompanyId,
+        title: '🔐 Senha de Acesso Atualizada',
+        message: `A senha de acesso do empresário (${currentUser.name}) foi atualizada com sucesso em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.`,
+        type: 'info'
+      });
+      setNotifications(CrmStorage.getNotifications());
+      setShowChangePasswordModal(false);
+      setCurrentPasswordInput('');
+      setNewPasswordInput('');
+      setConfirmPasswordInput('');
+      toast.success('Senha alterada com sucesso! Guarde suas novas credenciais de login.');
+    } else {
+      toast.error('Não foi possível alterar a senha. Tente novamente.');
+    }
+    setIsChangingPass(false);
+  };
 
   const myCompanyId = currentUser.companyId || 'comp-1';
   const myCompany = companies.find(c => c.id === myCompanyId) || {
@@ -138,6 +194,15 @@ export function ClientDashboard({ currentUser }: ClientDashboardProps) {
                 {unreadNotifsCount}
               </span>
             )}
+          </Button>
+
+          <Button
+            variant="outline"
+            className="gap-2 text-xs font-semibold border-amber-500/40 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
+            onClick={() => setShowChangePasswordModal(true)}
+          >
+            <KeyRound className="w-4 h-4 text-amber-500" />
+            <span>Alterar Senha</span>
           </Button>
 
           <Button
@@ -477,18 +542,163 @@ export function ClientDashboard({ currentUser }: ClientDashboardProps) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             {myTeamUsers.map(u => (
-              <div key={u.id} className="flex items-center gap-3 p-3 border border-border rounded-xl bg-muted/20">
-                <img 
-                  src={u.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'} 
-                  alt={u.name}
-                  className="w-10 h-10 rounded-full object-cover border border-border"
-                />
-                <div>
-                  <h4 className="font-bold text-sm text-foreground">{u.name}</h4>
-                  <span className="text-xs text-muted-foreground">{u.email}</span>
+              <div key={u.id} className="flex items-center justify-between p-3 border border-border rounded-xl bg-muted/20">
+                <div className="flex items-center gap-3">
+                  <img 
+                    src={u.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'} 
+                    alt={u.name}
+                    className="w-10 h-10 rounded-full object-cover border border-border"
+                  />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-bold text-sm text-foreground">{u.name}</h4>
+                      {u.id === currentUser.id && (
+                        <span className="text-[10px] bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold px-1.5 py-0.2 rounded">
+                          Você
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs text-muted-foreground">{u.email}</span>
+                  </div>
                 </div>
+
+                {u.id === currentUser.id && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs gap-1 border-amber-500/40 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
+                    onClick={() => setShowChangePasswordModal(true)}
+                  >
+                    <KeyRound className="w-3 h-3" />
+                    <span>Alterar Senha</span>
+                  </Button>
+                )}
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* MODAL: ALTERAÇÃO DE SENHA DO EMPRESÁRIO                  */}
+      {/* ======================================================== */}
+      {showChangePasswordModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md bg-card border border-border rounded-2xl shadow-2xl overflow-hidden text-card-foreground">
+            
+            <div className="p-6 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-b border-border flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-xl">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold">Alterar Senha de Acesso</h2>
+                  <p className="text-xs text-muted-foreground">Atualize a senha da sua conta empresarial</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowChangePasswordModal(false)}
+                className="text-muted-foreground hover:text-foreground p-1 rounded-lg hover:bg-muted"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleChangePassword} className="p-6 space-y-4">
+              
+              {/* Informações da conta */}
+              <div className="p-3 bg-muted/40 border border-border rounded-xl space-y-1 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Empresa:</span>
+                  <strong className="text-foreground">{myCompany.name}</strong>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Usuário:</span>
+                  <span className="font-medium text-foreground">{currentUser.name}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">E-mail de Login:</span>
+                  <span className="font-mono text-primary font-semibold">{currentUser.email}</span>
+                </div>
+              </div>
+
+              {/* Senha Atual */}
+              {currentUser.passwordHint && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold">Senha Atual *</Label>
+                  <div className="relative">
+                    <Input 
+                      type={showCurrentPass ? 'text' : 'password'}
+                      placeholder="Digite sua senha atual" 
+                      value={currentPasswordInput}
+                      onChange={e => setCurrentPasswordInput(e.target.value)}
+                      className="pr-9"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowCurrentPass(!showCurrentPass)}
+                      className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground"
+                    >
+                      {showCurrentPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Nova Senha */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Nova Senha *</Label>
+                <div className="relative">
+                  <Input 
+                    type={showNewPass ? 'text' : 'password'}
+                    placeholder="Mínimo de 4 caracteres" 
+                    value={newPasswordInput}
+                    onChange={e => setNewPasswordInput(e.target.value)}
+                    className="pr-9"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPass(!showNewPass)}
+                    className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground"
+                  >
+                    {showNewPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Confirmar Nova Senha */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Confirmar Nova Senha *</Label>
+                <Input 
+                  type={showNewPass ? 'text' : 'password'}
+                  placeholder="Repita a nova senha" 
+                  value={confirmPasswordInput}
+                  onChange={e => setConfirmPasswordInput(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-border">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setShowChangePasswordModal(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={isChangingPass}
+                  className="font-semibold gap-1.5 bg-primary hover:bg-primary/90"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>{isChangingPass ? 'Salvando...' : 'Salvar Nova Senha'}</span>
+                </Button>
+              </div>
+
+            </form>
           </div>
         </div>
       )}

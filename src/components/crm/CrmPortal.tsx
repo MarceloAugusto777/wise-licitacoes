@@ -95,9 +95,15 @@ export function CrmPortal({ onExit }: CrmPortalProps) {
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs font-bold text-foreground leading-tight">{currentUser.name}</span>
                   <span className={`text-[9px] uppercase font-bold px-1.5 py-0.2 rounded ${
-                    currentUser.role === 'analyst' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400' : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                    currentUser.role === 'analyst' 
+                      ? (currentUser.isMaster || currentUser.email?.toLowerCase() === 'marcelin5522@gmail.com' || currentUser.id === 'usr-analyst-master'
+                          ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30' 
+                          : 'bg-primary/20 text-primary border border-primary/30')
+                      : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
                   }`}>
-                    {currentUser.role === 'analyst' ? '👑 Analista' : '👔 Empresário'}
+                    {currentUser.role === 'analyst' 
+                      ? (currentUser.isMaster || currentUser.email?.toLowerCase() === 'marcelin5522@gmail.com' || currentUser.id === 'usr-analyst-master' ? '👑 Analista Master' : '🛡️ Analista') 
+                      : '👔 Empresário'}
                   </span>
                 </div>
                 <span className="text-[10px] text-muted-foreground">{currentUser.email}</span>

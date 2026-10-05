@@ -374,6 +374,22 @@ export class CrmStorage {
     return company;
   }
 
+  static updateCompany(companyId: string, partial: Partial<CrmCompany>): CrmCompany | null {
+    const list = this.getCompanies();
+    let updatedCompany: CrmCompany | null = null;
+    const updated = list.map(c => {
+      if (c.id === companyId) {
+        updatedCompany = { ...c, ...partial };
+        return updatedCompany;
+      }
+      return c;
+    });
+    if (updatedCompany) {
+      this.saveCompanies(updated);
+    }
+    return updatedCompany;
+  }
+
   static getUsers(): CrmUser[] {
     if (typeof window === 'undefined') return DEFAULT_USERS;
     const raw = localStorage.getItem(STORAGE_KEYS.USERS);
@@ -514,7 +530,17 @@ export class CrmStorage {
       return null;
     }
     try {
-      return JSON.parse(raw);
+      const parsed: CrmUser = JSON.parse(raw);
+      // Sempre sincroniza com a lista de usuários mais atualizada
+      const all = this.getUsers();
+      const found = all.find(u => u.id === parsed.id || u.email.toLowerCase() === parsed.email.toLowerCase());
+      if (found) {
+        if (JSON.stringify(found) !== JSON.stringify(parsed)) {
+          this.setCurrentUser(found);
+        }
+        return found;
+      }
+      return parsed;
     } catch {
       return null;
     }

@@ -55,7 +55,8 @@ export function AnalystDashboard({ currentUser, onSwitchUser }: AnalystDashboard
   // Verifica se o analista é o Master
   const isMaster = Boolean(
     currentUser.isMaster || 
-    currentUser.email.toLowerCase() === 'marcelin5522@gmail.com'
+    currentUser.email?.toLowerCase() === 'marcelin5522@gmail.com' ||
+    currentUser.id === 'usr-analyst-master'
   );
 
   const [companies, setCompanies] = useState<CrmCompany[]>(() => CrmStorage.getCompanies());
@@ -73,13 +74,22 @@ export function AnalystDashboard({ currentUser, onSwitchUser }: AnalystDashboard
 
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('all');
 
-  // Modais de Controle
   const [showCredentialsModal, setShowCredentialsModal] = useState(false);
   const [showNewTenderModal, setShowNewTenderModal] = useState(false);
   const [showNewCompanyModal, setShowNewCompanyModal] = useState(false);
   const [showNewAnalystModal, setShowNewAnalystModal] = useState(false);
   const [showTeamPermissionsModal, setShowTeamPermissionsModal] = useState(false);
   const [editingPermissionsUser, setEditingPermissionsUser] = useState<CrmUser | null>(null);
+
+  // Modal e Formulário de Edição de Acesso do Empresário (Analista Master)
+  const [showEditClientUserModal, setShowEditClientUserModal] = useState(false);
+  const [editingClientUser, setEditingClientUser] = useState<CrmUser | null>(null);
+  const [editClientForm, setEditClientForm] = useState({
+    name: '',
+    email: '',
+    passwordHint: '',
+    phone: ''
+  });
 
   const [copiedIndex, setCopiedIndex] = useState<string | null>(null);
 
@@ -114,6 +124,7 @@ export function AnalystDashboard({ currentUser, onSwitchUser }: AnalystDashboard
     email: '',
     phone: '',
     passwordHint: 'wise2026',
+    isMaster: false,
     allCompanies: true,
     selectedCompanyIds: [] as string[]
   });
@@ -146,6 +157,73 @@ export function AnalystDashboard({ currentUser, onSwitchUser }: AnalystDashboard
     setCopiedIndex(id);
     toast.success('Acesso copiado com sucesso!');
     setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
+  // Abrir Modal de Edição de Acesso do Empresário
+  const handleOpenEditClientUser = (u: CrmUser) => {
+    setEditingClientUser(u);
+    setEditClientForm({
+      name: u.name,
+      email: u.email,
+      passwordHint: u.passwordHint || 'wise2026',
+      phone: u.phone || ''
+    });
+    setShowEditClientUserModal(true);
+  };
+
+  // Salvar Edição de Acesso do Empresário (E-mail, Senha, Nome, Telefone)
+  const handleSaveClientUser = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingClientUser) return;
+    
+    if (!editClientForm.name.trim()) {
+      toast.error('O nome do empresário é obrigatório.');
+      return;
+    }
+    if (!editClientForm.email.trim() || !editClientForm.email.includes('@')) {
+      toast.error('Informe um e-mail válido para o empresário.');
+      return;
+    }
+
+    const emailTrimmed = editClientForm.email.toLowerCase().trim();
+
+    // Valida duplicidade de e-mail com outro usuário
+    const existingWithEmail = users.find(
+      u => u.id !== editingClientUser.id && u.email.toLowerCase().trim() === emailTrimmed
+    );
+    if (existingWithEmail) {
+      toast.error('Este e-mail já está sendo utilizado por outro usuário no sistema!');
+      return;
+    }
+
+    const updatedUser = CrmStorage.updateUser(editingClientUser.id, {
+      name: editClientForm.name.trim(),
+      email: emailTrimmed,
+      passwordHint: editClientForm.passwordHint.trim() || 'wise2026',
+      phone: editClientForm.phone.trim()
+    });
+
+    if (editingClientUser.companyId) {
+      CrmStorage.updateCompany(editingClientUser.companyId, {
+        email: emailTrimmed,
+        responsibleName: editClientForm.name.trim(),
+        phone: editClientForm.phone.trim()
+      });
+
+      // Registra notificação para o empresário
+      CrmStorage.addNotification({
+        companyId: editingClientUser.companyId,
+        title: '🔑 Credenciais de Acesso Atualizadas',
+        message: `O Analista Master atualizou o e-mail de acesso para: ${emailTrimmed}.`,
+        type: 'info'
+      });
+    }
+
+    setUsers(CrmStorage.getUsers());
+    setCompanies(CrmStorage.getCompanies());
+    setShowEditClientUserModal(false);
+    setEditingClientUser(null);
+    toast.success(`E-mail de acesso e credenciais de ${editClientForm.name} atualizados com sucesso!`);
   };
 
   // Cadastrar Nova Empresa (ex: CRM POSITIVO)
@@ -237,7 +315,7 @@ export function AnalystDashboard({ currentUser, onSwitchUser }: AnalystDashboard
       email: newAnalyst.email.trim().toLowerCase(),
       phone: newAnalyst.phone.trim(),
       role: 'analyst',
-      isMaster: false,
+      isMaster: Boolean(newAnalyst.isMaster),
       allowedCompanyIds: assignedCompanies,
       passwordHint: newAnalyst.passwordHint || 'wise2026',
       createdAt: new Date().toISOString()
@@ -282,6 +360,7 @@ export function AnalystDashboard({ currentUser, onSwitchUser }: AnalystDashboard
       email: '',
       phone: '',
       passwordHint: 'wise2026',
+      isMaster: false,
       allCompanies: true,
       selectedCompanyIds: []
     });
@@ -475,9 +554,8 @@ export function AnalystDashboard({ currentUser, onSwitchUser }: AnalystDashboard
 
             <Button
               size="sm"
-              variant="outline"
               onClick={() => setShowNewAnalystModal(true)}
-              className="gap-1.5 text-xs font-semibold border-amber-500/40 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
+              className="gap-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white shadow-sm"
             >
               <UserPlus className="w-3.5 h-3.5" />
               <span>+ Novo Analista</span>
@@ -523,6 +601,17 @@ export function AnalystDashboard({ currentUser, onSwitchUser }: AnalystDashboard
 
         {/* Global Action Buttons */}
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+          {isMaster && (
+            <Button 
+              size="sm" 
+              onClick={() => setShowNewAnalystModal(true)}
+              className="gap-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white shadow-sm"
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              <span>+ Novo Analista</span>
+            </Button>
+          )}
+
           <Button 
             variant="outline" 
             size="sm" 
@@ -907,9 +996,27 @@ export function AnalystDashboard({ currentUser, onSwitchUser }: AnalystDashboard
                 <div className="flex items-center justify-between">
                   <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
                     <Shield className="w-4 h-4 text-primary" />
-                    <span>Permissões de Empresas Atribuídas</span>
+                    <span>Nível de Acesso e Permissões</span>
                   </Label>
                   <span className="text-[11px] text-muted-foreground">Configurado pelo Master</span>
+                </div>
+
+                {/* Opção Analista Master */}
+                <div className="flex items-center gap-2.5 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                  <input 
+                    type="checkbox" 
+                    id="isMasterAnalystCheck"
+                    checked={newAnalyst.isMaster}
+                    onChange={e => setNewAnalyst({ 
+                      ...newAnalyst, 
+                      isMaster: e.target.checked,
+                      allCompanies: e.target.checked ? true : newAnalyst.allCompanies
+                    })}
+                    className="w-4 h-4 rounded text-amber-500 border-border focus:ring-amber-500"
+                  />
+                  <label htmlFor="isMasterAnalystCheck" className="text-xs font-medium cursor-pointer">
+                    👑 <strong>Tornar Analista Master:</strong> Acesso irrestrito a todas as empresas, gestão da equipe de analistas e permissão para editar acessos de clientes
+                  </label>
                 </div>
 
                 {/* Opção Acesso Total */}
@@ -918,11 +1025,12 @@ export function AnalystDashboard({ currentUser, onSwitchUser }: AnalystDashboard
                     type="checkbox" 
                     id="allCompaniesCheck"
                     checked={newAnalyst.allCompanies}
+                    disabled={newAnalyst.isMaster}
                     onChange={e => setNewAnalyst({ ...newAnalyst, allCompanies: e.target.checked })}
                     className="w-4 h-4 rounded text-primary border-border focus:ring-primary"
                   />
                   <label htmlFor="allCompaniesCheck" className="text-xs font-medium cursor-pointer">
-                    🌐 <strong>Acesso Total:</strong> Permitir visualizar e gerenciar todas as empresas atuais e futuras
+                    🌐 <strong>Acesso a Todas as Empresas:</strong> Visualizar e acompanhar os editais de todas as empresas da carteira
                   </label>
                 </div>
 
@@ -1237,15 +1345,14 @@ export function AnalystDashboard({ currentUser, onSwitchUser }: AnalystDashboard
                   {isMaster && (
                     <Button
                       size="sm"
-                      variant="ghost"
                       onClick={() => {
                         setShowCredentialsModal(false);
                         setShowNewAnalystModal(true);
                       }}
-                      className="h-7 text-xs text-primary gap-1"
+                      className="h-7 text-xs bg-amber-500 hover:bg-amber-600 text-white gap-1.5 font-semibold shadow-sm"
                     >
-                      <Plus className="w-3 h-3" />
-                      <span>Adicionar Analista</span>
+                      <UserPlus className="w-3.5 h-3.5" />
+                      <span>+ Novo Analista</span>
                     </Button>
                   )}
                 </div>
@@ -1323,8 +1430,33 @@ export function AnalystDashboard({ currentUser, onSwitchUser }: AnalystDashboard
 
                       <div className="space-y-2">
                         {clientUsers.length === 0 ? (
-                          <div className="text-xs text-muted-foreground italic p-2 bg-card rounded-lg border border-border">
-                            Nenhum login de empresário gerado para esta empresa ainda.
+                          <div className="flex items-center justify-between text-xs text-muted-foreground p-3 bg-card rounded-lg border border-border">
+                            <span>Nenhum login de empresário gerado para esta empresa ainda.</span>
+                            {isMaster && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs gap-1 text-primary border-primary/30"
+                                onClick={() => {
+                                  const newUsr: CrmUser = {
+                                    id: 'usr-client-' + Date.now(),
+                                    name: comp.responsibleName || comp.name,
+                                    email: comp.email,
+                                    role: 'client',
+                                    companyId: comp.id,
+                                    passwordHint: 'wise2026',
+                                    phone: comp.phone,
+                                    createdAt: new Date().toISOString()
+                                  };
+                                  CrmStorage.addUser(newUsr);
+                                  setUsers(CrmStorage.getUsers());
+                                  handleOpenEditClientUser(newUsr);
+                                }}
+                              >
+                                <Plus className="w-3 h-3" />
+                                <span>Criar Acesso</span>
+                              </Button>
+                            )}
                           </div>
                         ) : (
                           clientUsers.map(usr => {
@@ -1344,7 +1476,19 @@ export function AnalystDashboard({ currentUser, onSwitchUser }: AnalystDashboard
                                   </div>
                                 </div>
 
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  {isMaster && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="h-8 text-xs gap-1.5 border-primary/40 text-primary hover:bg-primary/10 font-semibold"
+                                      onClick={() => handleOpenEditClientUser(usr)}
+                                    >
+                                      <Edit className="w-3.5 h-3.5" />
+                                      <span>Editar Acesso</span>
+                                    </Button>
+                                  )}
+
                                   <Button
                                     size="sm"
                                     variant="outline"
@@ -1505,6 +1649,129 @@ export function AnalystDashboard({ currentUser, onSwitchUser }: AnalystDashboard
               <div className="pt-2 flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setShowNewTenderModal(false)}>Cancelar</Button>
                 <Button type="submit" className="font-semibold">Cadastrar e Notificar Cliente</Button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* MODAL: EDITAR ACESSO DO EMPRESÁRIO (ANALISTA MASTER)     */}
+      {/* ======================================================== */}
+      {showEditClientUserModal && editingClientUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md bg-card border border-border rounded-2xl shadow-2xl overflow-hidden text-card-foreground">
+            
+            <div className="p-6 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-border flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-primary/20 text-primary rounded-xl">
+                  <Edit className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold">Editar Acesso do Empresário</h2>
+                  <p className="text-xs text-muted-foreground">Atualize o e-mail de login e credenciais da conta</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => {
+                  setShowEditClientUserModal(false);
+                  setEditingClientUser(null);
+                }}
+                className="text-muted-foreground hover:text-foreground p-1 rounded-lg hover:bg-muted"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveClientUser} className="p-6 space-y-4">
+              
+              {/* Contexto da Empresa */}
+              {editingClientUser.companyId && (
+                <div className="p-3 bg-muted/40 border border-border rounded-xl space-y-1 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Empresa Parceira:</span>
+                    <strong className="text-foreground">
+                      {companies.find(c => c.id === editingClientUser.companyId)?.name || 'Empresa'}
+                    </strong>
+                  </div>
+                </div>
+              )}
+
+              {/* Nome */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Nome do Empresário / Responsável *</Label>
+                <Input 
+                  placeholder="Nome do cliente" 
+                  value={editClientForm.name}
+                  onChange={e => setEditClientForm({ ...editClientForm, name: e.target.value })}
+                  required
+                />
+              </div>
+
+              {/* E-mail de Acesso (Login) */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <span>📧 E-mail de Login do Empresário *</span>
+                  </Label>
+                  <span className="text-[10px] text-amber-500 font-semibold">Acesso ao Portal</span>
+                </div>
+                <Input 
+                  type="email"
+                  placeholder="email@empresa.com.br" 
+                  value={editClientForm.email}
+                  onChange={e => setEditClientForm({ ...editClientForm, email: e.target.value })}
+                  className="font-mono"
+                  required
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  Este é o e-mail que o empresário deve usar para entrar na plataforma.
+                </p>
+              </div>
+
+              {/* Senha de Acesso */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Senha de Acesso</Label>
+                <Input 
+                  placeholder="wise2026" 
+                  value={editClientForm.passwordHint}
+                  onChange={e => setEditClientForm({ ...editClientForm, passwordHint: e.target.value })}
+                  className="font-mono"
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  Senha que o empresário utiliza para login. Ele também pode alterá-la no painel dele.
+                </p>
+              </div>
+
+              {/* Telefone / WhatsApp */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Telefone / WhatsApp</Label>
+                <Input 
+                  placeholder="(11) 98888-7777" 
+                  value={editClientForm.phone}
+                  onChange={e => setEditClientForm({ ...editClientForm, phone: e.target.value })}
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-border">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowEditClientUserModal(false);
+                    setEditingClientUser(null);
+                  }}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="font-semibold gap-1.5 bg-primary hover:bg-primary/90"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Salvar Alterações</span>
+                </Button>
               </div>
 
             </form>
